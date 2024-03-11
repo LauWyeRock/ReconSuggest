@@ -178,22 +178,74 @@ if st.session_state.show_transaction:
     if journal_excel_uploader is not None:
         journal_df = pd.read_excel(journal_excel_uploader)
 
-    st.text_input('Amount', key='transaction_amount')
-    st.text_input('Description', key='transaction_description')
-    st.text_input('Reference', key='transaction_reference')
-    st.text_input('Payer/Payee', key='transaction_payer_payee')
+    invoice_button_label = None
+    journal_button_label = None
 
-    if st.button('Invoice/Bill Receipt'):
-        st.session_state.show_transaction = False
-        st.session_state.show_invoice_form = True
-        # show_invoice_form()
-        autofill_invoice_data(invoice_df)
+    st.text_input('Amount', key='transaction_amount', value="50")
+    st.text_input('Description', key='transaction_description', value="ATRO ATM/B2C ACCOUNT")
+    st.text_input('Reference', key='transaction_reference', value="C94_452_200258 1111..0000 06/05/23 120604 88812510 1703")
+    st.text_input('Payer/Payee', key='transaction_payer_payee', value="abc")
+
+    if invoice_df is not None and journal_df is not None: 
+
+        invoice_df = invoice_df.applymap(lambda x: str(x) if pd.notnull(x) else "")
+        journal_df = journal_df.applymap(lambda x: str(x) if pd.notnull(x) else "")
+
+        amount = st.session_state.get('transaction_amount', "")
+        description = st.session_state.get('transaction_description', "")
+        reference = st.session_state.get('transaction_reference', "")
+        payer_payee = st.session_state.get('transaction_payer_payee', "")
+
+        query_journal = ((journal_df['net_amount'] == amount) | (journal_df['net_amount'] == "") | (amount == "")) & \
+                    ((journal_df['bse_description'] == description) | (journal_df['bse_description'] == "") | (description == "")) & \
+                    ((journal_df['ext_reference'] == reference) | (journal_df['ext_reference'] == "") | (reference == "")) & \
+                    ((journal_df['ext_contact_name'] == payer_payee) | (journal_df['ext_contact_name'] == "") | (payer_payee == ""))
+
+
+
+        matched_rows_journal = journal_df.loc[query_journal]
+
+        query_invoice = ((invoice_df['net_amount'] == amount) | (invoice_df['net_amount'] == "") | (amount == "")) & \
+                    ((invoice_df['bse_description'] == description) | (invoice_df['bse_description'] == "") | (description == "")) & \
+                    ((invoice_df['ext_reference'] == reference) | (invoice_df['ext_reference'] == "") | (reference == "")) & \
+                    ((invoice_df['ext_contact_name'] == payer_payee) | (invoice_df['ext_contact_name'] == "") | (payer_payee == ""))
+            
+
+        matched_rows_invoice = invoice_df.loc[query_invoice]
+
+        highlight_invoice = len(matched_rows_invoice) > len(matched_rows_journal)
+        highlight_journal = not highlight_invoice  # Simplify to the opposite condition for clarity
         
-    if st.button('Journal Entry'):
-        st.session_state.show_transaction = False
-        st.session_state.show_journal_form = True
-        # display_journal_form()
-        autofill_journal_data(journal_df)
+
+        invoice_button_label = "Invoice/Bill Receipt (Suggested)" if highlight_invoice else "Invoice/Bill Receipt"
+        journal_button_label = "Journal Entry (Suggested)" if highlight_journal else "Journal Entry"
+
+        if st.button(invoice_button_label):
+            st.session_state.show_transaction = False
+            st.session_state.show_invoice_form = True
+            # show_invoice_form()
+            autofill_invoice_data(invoice_df)
+
+        if st.button(journal_button_label):
+            st.session_state.show_transaction = False
+            st.session_state.show_journal_form = True
+            # display_journal_form()
+            autofill_journal_data(journal_df)
+
+    else:
+
+        if st.button("Invoice/Bill Receipt"):
+            st.session_state.show_transaction = False
+            st.session_state.show_invoice_form = True
+            # show_invoice_form()
+            autofill_invoice_data(invoice_df)
+
+        if st.button("Journal Entry"):
+            st.session_state.show_transaction = False
+            st.session_state.show_journal_form = True
+            # display_journal_form()
+            autofill_journal_data(journal_df)
+
 
 
 
