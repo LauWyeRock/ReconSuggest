@@ -43,12 +43,13 @@ def autofill_invoice_data(invoice_df):
         reference = st.session_state.get('transaction_reference', "")
         payer_payee = st.session_state.get('transaction_payer_payee', "")
 
-        # Construct a query to filter the DataFrame for a row matching all criteria
-        # Adjust the column names ('Amount', 'Description', 'Reference', 'PayerPayee') to match your Excel file
-        query = (invoice_df['net_amount'] == amount) & \
-                (invoice_df['bse_description'] == description) & \
-                (invoice_df['ext_reference'] == reference) & \
-                (invoice_df['ext_contact_name'] == payer_payee)
+
+        # The query should be sL or new sL null, still match
+        query = ((invoice_df['net_amount'] == amount) | (invoice_df['net_amount'] == "") | (amount == "")) & \
+                ((invoice_df['bse_description'] == description) | (invoice_df['bse_description'] == "") | (description == "")) & \
+                ((invoice_df['ext_reference'] == reference) | (invoice_df['ext_reference'] == "") | (reference == "")) & \
+                ((invoice_df['ext_contact_name'] == payer_payee) | (invoice_df['ext_contact_name'] == "") | (payer_payee == ""))
+        
 
         matched_rows = invoice_df.loc[query]
         if not matched_rows.empty:
@@ -73,8 +74,6 @@ def autofill_journal_data(journal_df):
         journal_df = journal_df.applymap(lambda x: str(x) if pd.notnull(x) else "")
         # Collect form data
         amount = st.session_state.get('transaction_amount', "")
-        # amount = float(amount) if amount is not None else None
-
         description = st.session_state.get('transaction_description', "")
         reference = st.session_state.get('transaction_reference', "")
         payer_payee = st.session_state.get('transaction_payer_payee', "")
@@ -82,10 +81,11 @@ def autofill_journal_data(journal_df):
         # journal_df['business_transaction_reference'] = journal_df['business_transaction_reference'].apply(lambda x: str(x) if pd.notnull(x) else "")
         # journal_df['name_str'] = journal_df['name'].apply(lambda x: str(x) if pd.notnull(x) else "")
 
-        query = (journal_df['net_amount'] == amount) & \
-                (journal_df['bse_description'] == description) & \
-                (journal_df['ext_reference'] == reference) & \
-                (journal_df['ext_contact_name'] == payer_payee)
+        query = ((journal_df['net_amount'] == amount) | (journal_df['net_amount'] == "") | (amount == "")) & \
+                ((journal_df['bse_description'] == description) | (journal_df['bse_description'] == "") | (description == "")) & \
+                ((journal_df['ext_reference'] == reference) | (journal_df['ext_reference'] == "") | (reference == "")) & \
+                ((journal_df['ext_contact_name'] == payer_payee) | (journal_df['ext_contact_name'] == "") | (payer_payee == ""))
+
 
 
         matched_rows = journal_df.loc[query]
