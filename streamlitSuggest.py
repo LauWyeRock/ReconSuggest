@@ -1,5 +1,5 @@
 import streamlit as st
-import datetime
+from datetime import datetime
 import pandas as pd
 
 st.set_page_config(layout="wide")
@@ -216,35 +216,64 @@ if st.session_state.show_transaction:
         highlight_invoice = len(matched_rows_invoice) > len(matched_rows_journal)
         highlight_journal = not highlight_invoice  # Simplify to the opposite condition for clarity
         
+        #################################################
+        invoice_matches_count = len(matched_rows_invoice)
+        journal_matches_count = len(matched_rows_journal)
 
-        invoice_button_label = "Invoice/Bill Receipt (Suggested)" if highlight_invoice else "Invoice/Bill Receipt"
-        journal_button_label = "Journal Entry (Suggested)" if highlight_journal else "Journal Entry"
-
-        if st.button(invoice_button_label):
+        if invoice_matches_count > journal_matches_count:
+            # Show the invoice form and autofill data
             st.session_state.show_transaction = False
             st.session_state.show_invoice_form = True
-            # show_invoice_form()
             autofill_invoice_data(invoice_df)
-
-        if st.button(journal_button_label):
+        elif journal_matches_count > invoice_matches_count:
+            # Show the journal form and autofill data
             st.session_state.show_transaction = False
             st.session_state.show_journal_form = True
-            # display_journal_form()
             autofill_journal_data(journal_df)
+        else:
+            # Handle the case where counts are equal or both are zero
+            st.write("No clear match found. Please manually select the form to use.")
+            
+        #################################################
 
-    else:
+    #     invoice_button_label = "Invoice/Bill Receipt (Suggested)" if highlight_invoice else "Invoice/Bill Receipt"
+    #     journal_button_label = "Journal Entry (Suggested)" if highlight_journal else "Journal Entry"
 
-        if st.button("Invoice/Bill Receipt"):
-            st.session_state.show_transaction = False
-            st.session_state.show_invoice_form = True
-            # show_invoice_form()
-            autofill_invoice_data(invoice_df)
+    #     if st.button(invoice_button_label):
+    #         st.session_state.show_transaction = False
+    #         st.session_state.show_invoice_form = True
+    #         # show_invoice_form()
+    #         start_time = datetime.now()
+    #         autofill_invoice_data(invoice_df)
+    #         end_time = datetime.now()
+    #         time_diff = end_time - start_time
+    #         st.write(f"Reconciliation process took {time_diff.total_seconds()} seconds.")
 
-        if st.button("Journal Entry"):
-            st.session_state.show_transaction = False
-            st.session_state.show_journal_form = True
-            # display_journal_form()
-            autofill_journal_data(journal_df)
+    #     if st.button(journal_button_label):
+    #         st.session_state.show_transaction = False
+    #         st.session_state.show_journal_form = True
+    #         # display_journal_form()
+    #         start_time = datetime.now()
+    #         autofill_journal_data(journal_df)
+    #         end_time = datetime.now()
+    #         time_diff = end_time - start_time
+    #         st.write(f"Reconciliation process took {time_diff.total_seconds()} seconds.")
+
+    # else:
+
+    #     if st.button("Invoice/Bill Receipt"):
+    #         st.session_state.show_transaction = False
+    #         st.session_state.show_invoice_form = True
+
+
+    #         autofill_invoice_data(invoice_df)
+
+    #     if st.button("Journal Entry"):
+    #         st.session_state.show_transaction = False
+    #         st.session_state.show_journal_form = True
+
+
+    #         autofill_journal_data(journal_df)
 
 
 
